@@ -1,2 +1,3 @@
-# datapropsgraphSSL
-Contains code for "Analyzing Data-Centric Properties for Contrastive Learning on Graphs"
+# "Analyzing Data-Centric Properties for Contrastive Learning on Graphs"
+
+Code coming soon! 
