@@ -156,7 +156,7 @@ def main():
     parser.add_argument("--background_graph", type=str, default="tree",choices=['tree','ba'])
     parser.add_argument("--sample_size", type=int, default=1000)
     parser.add_argument(
-        "--multiplier", type=float, default=0.2, help="size of background wrt to motifs"
+        "--multiplier", type=float, default=4.0, help="size of background wrt to motifs"
     )
     parser.add_argument("--output_path", type=str, default="../data")
     args = parser.parse_args()
