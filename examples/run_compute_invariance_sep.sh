@@ -6,7 +6,7 @@ multiplier=4.0
 POSTFIX="data.pkl"
 PREFIX="../data"
 seed=237
-ckpt="../logs/A-B-C-D-E-F-${multiplier}/${method}_${multiplier}_${aug_type}_${aug_ratio}_False_${seed}_59.ckpt" \
+ckpt="../logs/A-B-C-D-E-F-${multiplier}/${method}_${multiplier}_${aug_type}_${aug_ratio}_False_${seed}.ckpt" \
 
 python compute_invariance_sep.py --dataset_list ${PREFIX}/${background_graph}_a1_${multiplier}/${POSTFIX} ${PREFIX}/${background_graph}_b1_${multiplier}/${POSTFIX} ${PREFIX}/${background_graph}_c1_${multiplier}/${POSTFIX} ${PREFIX}/${background_graph}_d1_${multiplier}/${POSTFIX} ${PREFIX}/${background_graph}_e1_${multiplier}/${POSTFIX} ${PREFIX}/${background_graph}_f1_${multiplier}/${POSTFIX} \
     --aug_ratio $aug_ratio \

@@ -12,6 +12,18 @@ This code uses:
 ```
 For install a complete list of dependecies, use `pip install -r requirements.txt`.
 
+## Quick Start 
+```
+mkdir data
+mkdir logs
+cd datagen
+./create_dataset.sh #create a synthetic dataset to evaluate on.
+cd ../examples 
+./run_method.sh #train a graph SSL method the generated dataset.
+./run_svc.ch #evaluate over different style ratios.
+./run_compute_invariance_sep.sh #compute the separability vs. invariance scores.
+```
+
 ## Synthetic Dataset Generation
 We provide an example script for generating a synthetic dataset in `datagen/create_dataset.sh`. With default settings, dataset files will be saved in, `./data/`. Augmentations designed for this synthetic dataset are provided in:
 
