@@ -27,17 +27,30 @@ from torch_geometric.transforms import ToUndirected
 import numpy as np
 from utils import get_augmentor, load_datasets
 
-def specloss(z1, z2):
+def nt_xentLoss(z1, z2, temperature=0.5):
+    z1 = F.normalize(z1, dim=1)
+    z2 = F.normalize(z2, dim=1)
     N, Z = z1.shape
     device = z1.device
-    similarity_matrix = F.cosine_similarity(z1.unsqueeze(1), z2.unsqueeze(0), dim=-1)
+    representations = torch.cat([z1, z2], dim=0)
+    similarity_matrix = F.cosine_similarity(
+        representations.unsqueeze(1), representations.unsqueeze(0), dim=-1
+    )
+    l_pos = torch.diag(similarity_matrix, N)
+    r_pos = torch.diag(similarity_matrix, -N)
+    positives = torch.cat([l_pos, r_pos]).view(2 * N, 1)
+    diag = torch.eye(2 * N, dtype=torch.bool, device=device)
+    diag[N:, :N] = diag[:N, N:] = diag[:N, :N]
 
-    pos = torch.diag(similarity_matrix)
-    diag = torch.eye(N, dtype=torch.bool, device=device)
-    negatives = similarity_matrix[~diag]
+    negatives = similarity_matrix[~diag].view(2 * N, -1)
 
-    loss = -(2 * pos.sum() / N) + (negatives.pow(2).sum() / (N * (N - 1)))
-    return loss
+    logits = torch.cat([positives, negatives], dim=1)
+    logits /= temperature
+
+    labels = torch.zeros(2 * N, device=device, dtype=torch.int64)
+
+    loss = F.cross_entropy(logits, labels, reduction="sum")
+    return loss / (2 * N)
 
 
 def make_gin_conv(input_dim, out_dim):
@@ -153,8 +166,7 @@ def train(encoder_model, dataloader, optimizer):
         
         if encoder_model.args.projector:
             g1, g2 = [encoder_model.encoder.project(g) for g in [g1, g2]]
-        
-        loss = specloss(z1=g1, z2=g2)
+        loss = nt_xentLoss(z1=g1, z2=g2, temperature=0.2) 
         loss.backward()
         optimizer.step()
         epoch_loss += loss.item()
@@ -206,7 +218,7 @@ class svc_dataset(InMemoryDataset):
 
 
 def arg_parser():
-    parser = argparse.ArgumentParser(description="SpecLoss")
+    parser = argparse.ArgumentParser(description="graphcl")
     parser.add_argument("--lr", default=0.01, type=float)
     parser.add_argument("--weight_decay", default=0.0, type=float)
     parser.add_argument("--multiplier", default=4.0, type=float)
@@ -263,10 +275,9 @@ def main():
     
     encoder_model = Encoder(encoder=gconv, args=args).to(device)
 
-    # datasetname, aug_type, aug_ratio,train_acc, valid_acc,test_acc
     targets = [
         args.dataset_name,
-        "SpecLoss",
+        "graphcl",
         args.aug_type,
         args.aug_ratio,
         args.projector,
@@ -278,7 +289,7 @@ def main():
     save_path = "{}/{}".format(args.save_path, args.dataset_name) 
     if not os.path.exists(save_path):
         os.mkdir(save_path) 
-    
+
     ckpt_save_path = "{}/{}/ckpts".format(args.save_path, args.dataset_name) 
     if not os.path.exists(ckpt_save_path):
         os.mkdir(ckpt_save_path) 
@@ -350,7 +361,7 @@ def main():
     """
     targets = [
         args.dataset_name,
-        "specloss",
+        "graphcl",
         args.aug_type,
         args.aug_ratio,
         args.projector,
@@ -364,7 +375,7 @@ def main():
     sep = ","
     targets = [str(t) for t in targets]
     save_str = sep.join(targets)
-    with open("{}/specloss_logs.csv".format(save_path), "a") as file:
+    with open("{}/graphcl_logs.csv".format(save_path), "a") as file:
         file.write("{}\n".format(save_str))
 
     # save ckpt!
@@ -379,13 +390,14 @@ def main():
         "losses":losses
     }
     
-    save_name = "specloss_{mult}_{aug_type}_{aug_ratio}_{proj}_{seed}.ckpt".format(
+    save_name = "graphcl_{mult}_{aug_type}_{aug_ratio}_{proj}_{seed}.ckpt".format(
         mult=args.multiplier,
         aug_type=args.aug_type,
         aug_ratio=args.aug_ratio,
         proj=args.projector,
         seed=args.seed,
     )
+        
     torch.save(obj=ckpt, f="{}/{}".format(ckpt_save_path,save_name))
 
 

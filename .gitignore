@@ -10,6 +10,7 @@ logs/
 *.csv
 *.pdf
 *.pkl
+*.pt
 # C extensions
 *.so
 
