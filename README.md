@@ -27,7 +27,7 @@ cd ../examples
 ## Synthetic Dataset Generation
 We provide an example script for generating a synthetic dataset in `datagen/create_dataset.sh`. With default settings, dataset files will be saved in, `./data/`. Augmentations designed for this synthetic dataset are provided in:
 
-- `edge_removing_caa.py`: Content-aware, oracle edge dropping augmentation. This augmentation will only drop edges that do not belong to "content" or insert "motif" in each sample.
+- `edge_removing_caa.py`: Content-aware, oracle edge dropping augmentation. This augmentation will only drop edges that do not belong to "content" or inserted "motif" in each sample.
 
 - `edge_removing_gga.py`: Generic edge dropping augmentation. This augmentation randomly drops a percentage of the total edges in each sample.
 
